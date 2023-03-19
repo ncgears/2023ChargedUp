@@ -54,7 +54,7 @@ public class Constants {
 
             //assign axis
             public static final int axis_throttle = 0;
-            public static final int axis_turn = 1;
+            public static final int axis_turn = 4;
 
             //assign buttons
             public static final int btn_IntakeDeploy = Controllers.Logitech.BTN_LB; 
