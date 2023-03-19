@@ -1,0 +1,18 @@
+{
+  "HALProvider": {
+    "Other Devices": {
+      "Talon SRX[5]": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Robot/Auton Chooser": "String Chooser",
+      "/SmartDashboard/Auton Choices": "String Chooser"
+    }
+  }
+}

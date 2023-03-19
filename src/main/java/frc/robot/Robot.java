@@ -2,86 +2,193 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
+/**
+ * This Robot Base has been written and provided by Jim Barstow <jim@ncgears.com>
+ * Courtesy of FRC Team 1918, NC GEARS
+ * 
+ * NC GEARS maintains this Robot Base each season to support many teams that need additional code support.
+ * It may be freely copied and used. If you find it helpful, please send Jim an email saying thanks
+ * or to share ideas for improvement.
+ * 
+ * Before deploying this code, you should set your team number.
+ *  1. In VS Code, press CTRL-SHIFT-P
+ *  2. Type "Set Team Number" and choose "WPILib: Set Team Number"
+ *  3. Enter your team number and press enter
+ * 
+ * It is recommended that teams use "Shuffleboard" as their dashboard. Set this in the driver station settings section under
+ * "Dashboard Type"
+ */
+ 
 package frc.robot;
-//test
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+
+/* Uncomment this if you have a NavX on the Robo Rio SPI port (safe to leave always, even if you dont have one) */
+import edu.wpi.first.wpilibj.SPI;
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Solenoid;
+/* TODO: Uncomment this if you have a USB Camera connected to the Robo Rio */
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
+/* TODO: Uncomment this if drivetrain uses TalonSRX and/or VictorSPX */
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+
+/* TODO: Uncomment this if drivetrain uses CANSparkMax */
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+/* TODO: Uncomment this if there is Pneumatics */
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+
+/* The following should always be imported */
+import edu.wpi.first.wpilibj.Timer; //Used for sequencing Autons
+import edu.wpi.first.wpilibj.Joystick; //Used for setting up controller
+import edu.wpi.first.wpilibj.TimedRobot; //Used for the robot
+import edu.wpi.first.wpilibj.drive.DifferentialDrive; //Used for a differential drivetrain (tank)
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup; //Used to group motor controllers for simpler control
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.util.Map;
+
+// Import some utility classes
+import frc.robot.utils.OI;
+import frc.robot.utils.Logger;
 
 /**
- * This drives the robot with Arcade steering (vs. tank drive) where the left joystick is throttle, and the right joystick is turning.
+ * This robot base builds a differential drive (left/right side, such as the 6-wheel Andymark kit chassis).
+ * The control system is Arcade steering, where one control stick is the throttle, and the other is the turning.
+ * This control system works well with a dual thumbstick controller, such as logitech F310 or xbox controller.
  */
 public class Robot extends TimedRobot {
-  private final WPI_VictorSPX m_leftfront = new WPI_VictorSPX(Constants.IDs.Victor.driveLeftFront);
-  private final WPI_VictorSPX m_leftrear = new WPI_VictorSPX(Constants.IDs.Victor.driveLeftRear);
-  private final WPI_TalonSRX m_lefttop = new WPI_TalonSRX(Constants.IDs.Talon.driveLeftTop);
-  private final WPI_VictorSPX m_rightfront = new WPI_VictorSPX(Constants.IDs.Victor.driveRightFront);
-  private final WPI_VictorSPX m_rightrear = new WPI_VictorSPX(Constants.IDs.Victor.driveRightRear);
-  private final WPI_TalonSRX m_righttop = new WPI_TalonSRX(Constants.IDs.Talon.driveRightTop);
-  private final MotorControllerGroup m_leftMotor = new MotorControllerGroup(m_lefttop, m_leftfront, m_leftrear);
-  private final MotorControllerGroup m_rightMotor = new MotorControllerGroup(m_righttop, m_rightfront, m_rightrear);
-  private final DifferentialDrive m_robotDrive = new DifferentialDrive(m_leftMotor, m_rightMotor);
-  private final Joystick m_leftJoystick = new Joystick(Constants.OI.leftJoy);
-  private final Joystick m_rightJoystick = new Joystick(Constants.OI.rightJoy);
+
+  /**
+   *  TODO: Uncomment the appropriate motor controllers for your drivetrain
+   *  You must edit Constants.java and set the appropriate IDs for your controllers.
+  */
+
+  /* This sets up a 4 controller drivetrain using 2 Talons per side */
+  // private final WPI_TalonSRX m_driveLeftFront = new WPI_TalonSRX(Constants.IDs.DriveTrain.driveLeftFront);
+  // private final WPI_TalonSRX m_driveLeftRear = new WPI_TalonSRX(Constants.IDs.DriveTrain.driveLeftRear);
+  // private final WPI_TalonSRX m_driveRightFront = new WPI_TalonSRX(Constants.IDs.DriveTrain.driveRightFront);
+  // private final WPI_TalonSRX m_driveRightRear = new WPI_TalonSRX(Constants.IDs.DriveTrain.driveRightRear);
+
+  /* This sets up a 4 controller drivetrain using 2 Victors per side */
+  // private final WPI_VictorSPX m_driveLeftFront = new WPI_VictorSPX(Constants.IDs.DriveTrain.driveLeftFront);
+  // private final WPI_VictorSPX m_driveLeftRear = new WPI_VictorSPX(Constants.IDs.DriveTrain.driveLeftRear);
+  // private final WPI_VictorSPX m_driveRightFront = new WPI_VictorSPX(Constants.IDs.DriveTrain.driveRightFront);
+  // private final WPI_VictorSPX m_driveRightRear = new WPI_VictorSPX(Constants.IDs.DriveTrain.driveRightRear);
+
+  /* This sets up a 4 controller drivetrain using 2 SparkMax per side */
+  // The motor type must be configured as either MotorType.kBrushed (CIM) or MotorType.kBrushless (Neo)
+  private final CANSparkMax m_driveLeftFront = new CANSparkMax(Constants.IDs.DriveTrain.driveLeftFront, MotorType.kBrushed);
+  private final CANSparkMax m_driveLeftRear = new CANSparkMax(Constants.IDs.DriveTrain.driveLeftRear, MotorType.kBrushed);
+  private final CANSparkMax m_driveRightFront = new CANSparkMax(Constants.IDs.DriveTrain.driveRightFront, MotorType.kBrushed);
+  private final CANSparkMax m_driveRightRear = new CANSparkMax(Constants.IDs.DriveTrain.driveRightRear, MotorType.kBrushed);
+
+  /* This builds 2 motor control groups to make it easier to control the motor controllers */
+  private final MotorControllerGroup m_leftDriveMotors = new MotorControllerGroup(m_driveLeftFront, m_driveLeftRear);
+  private final MotorControllerGroup m_rightDriveMotors = new MotorControllerGroup(m_driveRightFront, m_driveRightRear);
+
+  /* This builds the differential drive base */
+  private final DifferentialDrive m_robotDrive = new DifferentialDrive(m_leftDriveMotors, m_rightDriveMotors);
+
+  /* This builds your operator interface (Joysticks) */
+  private final Joystick m_driver = new Joystick(Constants.IDs.OI.driverJoy);
+  private final Joystick m_operator = new Joystick(Constants.IDs.OI.operJoy);
+
+  /* This sets up the NavX gyro */
   private final AHRS m_gyro = new AHRS(SPI.Port.kMXP);
-  private final DoubleSolenoid m_gearShift = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, Constants.IDs.Solenoid.driveLowGear, Constants.IDs.Solenoid.driveHighGear);
-  private final Solenoid m_collector = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.IDs.Solenoid.collectorRaise);
-  private final WPI_TalonSRX m_intake = new WPI_TalonSRX(Constants.IDs.Talon.intake);
-  private final WPI_TalonSRX m_tunnel = new WPI_TalonSRX(Constants.IDs.Talon.tunnel);
-  private final WPI_TalonSRX m_shooterLeft = new WPI_TalonSRX(Constants.IDs.Talon.shooterLeft);
-  private final WPI_TalonSRX m_shooterRight = new WPI_TalonSRX(Constants.IDs.Talon.shooterRight);
-  private final MotorControllerGroup m_shooter = new MotorControllerGroup(m_shooterLeft, m_shooterRight);
+
+  /* This sets up a timer used for various things */
   private final Timer m_timer = new Timer();
+
+  /* This creates the Auton chooser */
+  private String m_autonSelected;
+  private final SendableChooser<String> m_autonChooser = new SendableChooser<>();
+
+  /* This sets up some example pneumatic devices */
+  private final DoubleSolenoid m_gearShift = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, Constants.IDs.Solenoid.driveLowGear, Constants.IDs.Solenoid.driveHighGear);
+  private final Solenoid m_intake = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.IDs.Solenoid.intakeDeploy);
+
+  /* This sets up an arm using 2 talons */
+  // private final WPI_TalonSRX m_armLeft = new WPI_TalonSRX(Constants.IDs.Arm.armLeft);
+  // private final WPI_TalonSRX m_armRight = new WPI_TalonSRX(Constants.IDs.Arm.armRight);
+  // private final MotorControllerGroup m_arm = new MotorControllerGroup(m_armLeft, m_armRight);
 
   @Override
   public void robotInit() {
-    //Disable LiveWindow data (not needed)
-    LiveWindow.disableAllTelemetry();
-    //Start Camera Server
-    UsbCamera camera = CameraServer.startAutomaticCapture();
-    camera.setResolution(640, 480);
-    // Invert one side only usually, so that forward is green on the controller and backwards is red
-    m_leftMotor.setInverted(Constants.DriveTrain.Left.isInverted);
-    m_rightMotor.setInverted(Constants.DriveTrain.Right.isInverted);
-    //m_leftfront.follow(m_lefttop);
-    //m_leftrear.follow(m_lefttop);
-    m_lefttop.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder);
+    //TODO: Uncomment this if using talons or victors for drivetrain
+    /* It is a good idea to reset and configure them */
+    // m_driveLeftFront.configFactoryDefault();
+    // m_driveLeftFront.setNeutralMode(NeutralMode.Coast);
+    // m_driveLeftRear.configFactoryDefault();
+    // m_driveLeftRear.setNeutralMode(NeutralMode.Coast);
+    // m_driveRightFront.configFactoryDefault();
+    // m_driveRightFront.setNeutralMode(NeutralMode.Coast);
+    // m_driveRightRear.configFactoryDefault();
+    // m_driveRightRear.setNeutralMode(NeutralMode.Coast);
 
-    m_intake.setInverted(Constants.Collector.intakeIsInverted);
-    m_intake.setNeutralMode(NeutralMode.Brake);
-    m_gearShift.set(DoubleSolenoid.Value.kForward);
-    m_tunnel.setInverted(Constants.Tunnel.tunnelIsInverted);
-    m_tunnel.setNeutralMode(NeutralMode.Brake);
-    m_shooterLeft.setInverted(Constants.Shooter.shooterLeftIsInverted);
-    m_shooterRight.setInverted(Constants.Shooter.shooterRightIsInverted);
-    m_shooterLeft.setNeutralMode(NeutralMode.Coast);
-    m_shooterRight.setNeutralMode(NeutralMode.Coast);
+    //TODO: Uncomment this if using sparkmax for drivetrain
+    /* It is a good idea to reset and configure them */
+    m_driveLeftFront.restoreFactoryDefaults();
+    m_driveLeftFront.setIdleMode(IdleMode.kCoast);
+    m_driveLeftRear.restoreFactoryDefaults();
+    m_driveLeftRear.setIdleMode(IdleMode.kCoast);
+    m_driveRightFront.restoreFactoryDefaults();
+    m_driveRightFront.setIdleMode(IdleMode.kCoast);
+    m_driveRightRear.restoreFactoryDefaults();
+    m_driveRightRear.setIdleMode(IdleMode.kCoast);
+
+    //Configure the drivetrains (invert sides as defined in constants)
+    m_leftDriveMotors.setInverted(Constants.DriveTrain.Left.isInverted);
+    m_rightDriveMotors.setInverted(Constants.DriveTrain.Right.isInverted);
+    
+    //Configure the solenoids
+    m_gearShift.set(DoubleSolenoid.Value.kForward); //high gear
+    m_intake.set(!Constants.Intake.kAirStateDeployed); //retracted
+
+    //Add the autons to the chooser
+    //The first argument is the friendly name displayed in the dashboard
+    //The second argument is the auton object name that must match in autonomousPeriodic section
+    m_autonChooser.setDefaultOption("Do Nothing","autoDoNothing"); 
+    m_autonChooser.addOption("Drive Forward 2sec","autoDriveForward");
+    m_autonChooser.addOption("Drive Backwards 2sec","autoDriveBackward");
+    //put the chooser in the dashboard
+    SmartDashboard.putData("Auton Choices",m_autonChooser);
+
+    ShuffleboardTab robotTab = Shuffleboard.getTab("Robot");
+    robotTab.add("Auton Chooser", m_autonChooser)
+      .withPosition(0,0)
+      .withSize(3,1)
+      .withWidget(BuiltInWidgets.kComboBoxChooser);
+    if(Constants.Global.hasCamera) {
+      UsbCamera m_camera = CameraServer.startAutomaticCapture();
+      m_camera.setResolution(320, 240);
+      m_camera.setFPS(15);
+      robotTab.add("USB Camera", m_camera)
+        .withPosition(3,0)
+        .withSize(4,4)
+        .withProperties(Map.of("Glyph","CAMERA_RETRO","Show Glyph",true,"Show crosshair",false,"Crosshair color","#333333","Show controls",false))
+        .withWidget(BuiltInWidgets.kCameraStream);
+    }
+    //Select the Robot tab by default
+    Shuffleboard.selectTab("Robot");
   }
 
-  //This runs at when the robot is disabled. Useful for resetting things.
+  //This runs at when the robot is disabled. Useful for resetting things back to a starting configuration
   @Override
   public void disabledInit() {
-    System.out.println("disabledInit: Resetting drivetrain to low gear");
-    m_gearShift.set(DoubleSolenoid.Value.kForward); //reset to low gear
-    System.out.println("disabledInit: Retracting collector");
-    m_collector.set(!Constants.Collector.airStateDeployed); //retract the collector
+    Logger.write("disabledInit: Resetting drivetrain to high gear");
+    m_gearShift.set(DoubleSolenoid.Value.kForward); //reset to high gear
+    Logger.write("disabledInit: Retracting intake");
+    m_intake.set(!Constants.Intake.kAirStateDeployed); //retract the intake
   }
 
   //This runs at the beginning of teleop
@@ -93,101 +200,61 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     // Drive with arcade drive.
-    // That means that the Y axis drives forward
-    // and backward, and the X turns left and right.
-    if(Constants.OI.useTankDrive) {
-      m_robotDrive.tankDrive(OI.deadband(-m_leftJoystick.getRawAxis(1)) * Constants.DriveTrain.kSpeedMultiplier, OI.deadband(-m_rightJoystick.getRawAxis(1)) * Constants.DriveTrain.kSpeedMultiplier);
-    } else {
-      m_robotDrive.arcadeDrive(OI.deadband(-m_leftJoystick.getRawAxis(1)) * Constants.DriveTrain.kSpeedMultiplier, OI.deadband(m_rightJoystick.getRawAxis(0)));
-    }
+    m_robotDrive.arcadeDrive(
+      OI.deadband(-m_driver.getRawAxis(Constants.IDs.OI.axis_throttle)) * Constants.DriveTrain.kSpeedMultiplier, 
+      OI.deadband(m_driver.getRawAxis(Constants.IDs.OI.axis_turn)) * Constants.DriveTrain.kTurnMutliplier
+    );
 
     //Handle the gear shifting
-    if(m_leftJoystick.getRawButtonPressed(Constants.Controllers.Ultrastik.BTN_4)) { //shift to low gear
-      System.out.println("teleopPeriodic: Shifting to low gear -- I am STRONG!");
-      m_gearShift.set(DoubleSolenoid.Value.kForward);
-    } else if(m_leftJoystick.getRawButtonPressed(Constants.Controllers.Ultrastik.BTN_5)) { //shift to high gear
-      System.out.println("teleopPeriodic: Shifting to high gear -- I am SPEED!");
-      m_gearShift.set(DoubleSolenoid.Value.kReverse); 
+    if(m_driver.getRawButtonPressed(Constants.IDs.OI.btn_shiftLow)) { //shift to low gear
+      Logger.write("teleopPeriodic: Shifting to low gear -- I am STRONG!");
+      m_gearShift.set(DoubleSolenoid.Value.kReverse);
+    } else if(m_driver.getRawButtonPressed(Constants.IDs.OI.btn_shiftHigh)) { //shift to high gear
+      Logger.write("teleopPeriodic: Shifting to high gear -- I am SPEED!");
+      m_gearShift.set(DoubleSolenoid.Value.kForward); 
     }
 
-    //Handle the collector controls
-    if(m_rightJoystick.getRawButtonPressed(Constants.Controllers.Ultrastik.BTN_4)) { //lower collector
-      System.out.println("teleopPeriodic: Lowering Collector");
-      m_collector.set(!Constants.Collector.airStateDeployed);
-    } else if(m_rightJoystick.getRawButtonPressed(Constants.Controllers.Ultrastik.BTN_5)) { //raise collector
-      System.out.println("teleopPeriodic: Raising Collector");
-      m_collector.set(Constants.Collector.airStateDeployed);
-    }
-
-    //Handle the intake
-    if(m_rightJoystick.getRawButtonPressed(Constants.Controllers.Ultrastik.BTN_2)) { //intake in
-      System.out.println("teleopPeriodic: Intake In");
-      m_intake.set(ControlMode.PercentOutput, Constants.Collector.kIntakeSpeed);
-    } else if (m_rightJoystick.getRawButtonPressed(Constants.Controllers.Ultrastik.BTN_1)) { //intake out
-      System.out.println("teleopPeriodic: Intake Out");
-      m_intake.set(ControlMode.PercentOutput, Constants.Collector.kIntakeSpeed * -1);
-    } else if (m_rightJoystick.getRawButtonReleased(Constants.Controllers.Ultrastik.BTN_2) || m_rightJoystick.getRawButtonReleased(Constants.Controllers.Ultrastik.BTN_1)) { //intake stop
-      System.out.println("teleopPeriodic: Intake Stop");
-      m_intake.set(ControlMode.PercentOutput, 0);
-    }
-
-    //Handle the tunnel
-    if(m_rightJoystick.getRawButtonPressed(Constants.Controllers.Ultrastik.BTN_6)) { //start tunnel
-      System.out.println("teleopPeriodic: Tunnel Start");
-      m_tunnel.set(Constants.Tunnel.kTunnelSpeed);
-    } else if (m_rightJoystick.getRawButtonReleased(Constants.Controllers.Ultrastik.BTN_6)) { //stop tunnel
-      System.out.println("teleopPeriodic: Tunnel Stop");
-      m_tunnel.stopMotor();
-    }
-
-    //Handle the shooter
-    if(m_rightJoystick.getRawButtonPressed(Constants.Controllers.Ultrastik.BTN_7)) { //start shooter
-      System.out.println("teleopPeriodic: Shooter Start");
-      m_shooter.set(Constants.Shooter.kShooterSpeed);
-    } else if (m_rightJoystick.getRawButtonReleased(Constants.Controllers.Ultrastik.BTN_7)) { //stop shooter
-      System.out.println("teleopPeriodic: Shooter Stop");
-      m_shooter.stopMotor();
+    //Handle the intake controls
+    if(m_driver.getRawButtonPressed(Constants.IDs.OI.btn_IntakeDeploy)) { //lower collector
+      Logger.write("teleopPeriodic: Deploying Intake");
+      m_intake.set(Constants.Intake.kAirStateDeployed);
+    } else if(m_driver.getRawButtonPressed(Constants.IDs.OI.btn_IntakeDeploy)) { //raise collector
+      Logger.write("teleopPeriodic: Retracting Intake");
+      m_intake.set(!Constants.Intake.kAirStateDeployed);
     }
   }
 
   //This runs at the beginning of autonomous
   @Override
   public void autonomousInit() {
-    m_timer.reset();
-    m_timer.start();
+    m_timer.reset(); //reset the timer
+    m_timer.start(); //start the timer
+    m_autonSelected = m_autonChooser.getSelected();
+    Logger.write("autonomousInit: Running auton '"+m_autonSelected+"'");
   }
 
   //This runs every loop during autonomous
   @Override
   public void autonomousPeriodic() {
-    if (!Constants.Auton.isDisabled) {
-      switch (Constants.Auton.autonName) {
-        case "Basic": //Basic Auton
-          if (m_timer.get() < 2.0) { //2 seconds
-            m_robotDrive.arcadeDrive(-Constants.Auton.kAutonDriveSpeed, 0.0); //drive forward at 60% speed
-          } else {
-            m_robotDrive.stopMotor(); //stop
-          }
-          break;
-        case "ShootAndScoot": //Basic Auton
-          m_shooter.set(Constants.Shooter.kShooterSpeed); //start the shooter
-          //wait for shooter to get to speed, then run the tunnel until it is time to drive
-          if (m_timer.get() > 0.5 && m_timer.get() < 2.0) { //at 0.5s, until 2s
-            m_tunnel.set(Constants.Tunnel.kTunnelSpeed);
-          } else {
-            m_tunnel.stopMotor();
-          }
-          //stop the shooter and start driving
-          if (m_timer.get() > 2.0 && m_timer.get() < 4.0) { //at 2s, until 4s
-            m_shooter.stopMotor();
-            m_robotDrive.arcadeDrive(-Constants.Auton.kAutonDriveSpeed, 0.0); //drive forward at 50% speed
-          } else {
-            m_robotDrive.stopMotor(); //stop
-          }
-          break;
-        default:
-          break;
-      }
+    switch (m_autonSelected) { //This defines each auton. They must match the object names exactly of the things added to the chooser in robotInit
+      case "autoDriveBackward":
+        if (m_timer.get() < 2.0) { //2 seconds
+          m_robotDrive.arcadeDrive(-Constants.Auton.kAutonDriveSpeed, 0.0); //drive backward
+        } else {
+          m_robotDrive.stopMotor(); //stop
+        }
+        break;
+      case "autoDriveForward":
+        if (m_timer.get() < 2.0) { //2 seconds
+          m_robotDrive.arcadeDrive(Constants.Auton.kAutonDriveSpeed, 0.0); //drive forward
+        } else {
+          m_robotDrive.stopMotor(); //stop
+        }
+        break;
+      case "autoDoNothing": //Do Nothing auton
+      default: //Anything not configured above
+        m_robotDrive.stopMotor();
+        break;
     }
   }
 }

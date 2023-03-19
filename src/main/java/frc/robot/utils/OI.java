@@ -1,4 +1,6 @@
-package frc.robot;
+package frc.robot.utils;
+
+import frc.robot.Constants;
 
 public class OI {
     public static double deadband(double value) {
