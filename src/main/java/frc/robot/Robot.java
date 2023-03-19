@@ -10,13 +10,15 @@
  * It may be freely copied and used. If you find it helpful, please send Jim an email saying thanks
  * or to share ideas for improvement.
  * 
- * Before deploying this code, you should set your team number.
+ * TODO: Before deploying this code, you should set your team number.
  *  1. In VS Code, press CTRL-SHIFT-P
  *  2. Type "Set Team Number" and choose "WPILib: Set Team Number"
  *  3. Enter your team number and press enter
  * 
- * It is recommended that teams use "Shuffleboard" as their dashboard. Set this in the driver station settings section under
- * "Dashboard Type"
+ * TODO: It is recommended to set dashboard type to "Shuffleboard" in drivers station settings section
+ * The layout can be loaded in shuffleboard in the file->load layout menu
+ * There is a basic layout in shuffleboard\shuffleboard.json, but the robot will build a "Robot" tab automatically
+ * with an auton chooser and a camera (if you have a usb cam and hasCamera set to true in constants)
  */
  
 package frc.robot;
