@@ -26,3 +26,11 @@ You may fork this repo (make a copy for yourself) and use it as you see fit.
 1. After cloning the repo (How to use this robot base, above), in the bottom left of the VS Code, click "master"
 2. In the pop-up dialog, start typing your team number. There should be a branch named "XXXX_TeamName" for you.
 3. Select the branch related to your name.
+
+## When you are ready to take your code and go out on your own repo
+First off, congratulations!  I am happy you are ready to give it a go.  You have a few options:
+1. Fork the entire repository (this will clone everything, including the branches for other teams)
+2. Create a new repo of your own, copy the contents of the folder to your new repo and init the repo
+3. Write from scratch anything you want to keep
+
+I am always happy to have you make "ncgears" a collaborator on your own repository so that I can help you with code and push changes to you.
