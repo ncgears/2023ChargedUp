@@ -116,8 +116,8 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_autonChooser = new SendableChooser<>();
 
   /* This sets up some example pneumatic devices */
-  private final DoubleSolenoid m_gearShift = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, Constants.IDs.Solenoid.driveLowGear, Constants.IDs.Solenoid.driveHighGear);
-  private final Solenoid m_intake = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.IDs.Solenoid.intakeDeploy);
+  // private final DoubleSolenoid m_gearShift = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, Constants.IDs.Solenoid.driveLowGear, Constants.IDs.Solenoid.driveHighGear);
+  // private final Solenoid m_intake = new Solenoid(PneumaticsModuleType.CTREPCM, Constants.IDs.Solenoid.intakeDeploy);
 
   /* This sets up an arm using 2 talons */
   // private final WPI_TalonSRX m_armLeft = new WPI_TalonSRX(Constants.IDs.Arm.armLeft);
@@ -153,8 +153,8 @@ public class Robot extends TimedRobot {
     m_rightDriveMotors.setInverted(Constants.DriveTrain.Right.isInverted);
     
     //Configure the solenoids
-    m_gearShift.set(DoubleSolenoid.Value.kForward); //high gear
-    m_intake.set(!Constants.Intake.kAirStateDeployed); //retracted
+    // m_gearShift.set(DoubleSolenoid.Value.kForward); //high gear
+    // m_intake.set(!Constants.Intake.kAirStateDeployed); //retracted
 
     //Add the autons to the chooser
     //The first argument is the friendly name displayed in the dashboard
@@ -188,9 +188,9 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledInit() {
     Logger.write("disabledInit: Resetting drivetrain to high gear");
-    m_gearShift.set(DoubleSolenoid.Value.kForward); //reset to high gear
+    // m_gearShift.set(DoubleSolenoid.Value.kForward); //reset to high gear
     Logger.write("disabledInit: Retracting intake");
-    m_intake.set(!Constants.Intake.kAirStateDeployed); //retract the intake
+    // m_intake.set(!Constants.Intake.kAirStateDeployed); //retract the intake
   }
 
   //This runs at the beginning of teleop
@@ -210,19 +210,19 @@ public class Robot extends TimedRobot {
     //Handle the gear shifting
     if(m_driver.getRawButtonPressed(Constants.IDs.OI.btn_shiftLow)) { //shift to low gear
       Logger.write("teleopPeriodic: Shifting to low gear -- I am STRONG!");
-      m_gearShift.set(DoubleSolenoid.Value.kReverse);
+      // m_gearShift.set(DoubleSolenoid.Value.kReverse);
     } else if(m_driver.getRawButtonPressed(Constants.IDs.OI.btn_shiftHigh)) { //shift to high gear
       Logger.write("teleopPeriodic: Shifting to high gear -- I am SPEED!");
-      m_gearShift.set(DoubleSolenoid.Value.kForward); 
+      // m_gearShift.set(DoubleSolenoid.Value.kForward); 
     }
 
     //Handle the intake controls
     if(m_driver.getRawButtonPressed(Constants.IDs.OI.btn_IntakeDeploy)) { //lower collector
       Logger.write("teleopPeriodic: Deploying Intake");
-      m_intake.set(Constants.Intake.kAirStateDeployed);
+      // m_intake.set(Constants.Intake.kAirStateDeployed);
     } else if(m_driver.getRawButtonPressed(Constants.IDs.OI.btn_IntakeDeploy)) { //raise collector
       Logger.write("teleopPeriodic: Retracting Intake");
-      m_intake.set(!Constants.Intake.kAirStateDeployed);
+      // m_intake.set(!Constants.Intake.kAirStateDeployed);
     }
   }
 
