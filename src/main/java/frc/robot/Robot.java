@@ -32,9 +32,9 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 
 /* TODO: Uncomment this if drivetrain uses TalonSRX and/or VictorSPX */
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
+// import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+// import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
+// import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 /* TODO: Uncomment this if drivetrain uses CANSparkMax */
 import com.revrobotics.CANSparkMax;
